@@ -3,13 +3,13 @@ import ButtonLink from "./ButtonLink";
 function PageHeader() {
   return (
     <header className="space-y-5">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h1 className="font-semibold text-4xl text-slate-100">Exportify</h1>
         <h2 className="text-xl">
           Export public & private Spotify playlists to a CSV or JSON file
           download.
         </h2>
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p>
             Public playlists can be exported using their URL without logging in
             to Spotify.

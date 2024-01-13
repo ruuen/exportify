@@ -27,7 +27,7 @@ function App() {
   return (
     <>
       <PageHeader />
-      <main className="mt-5 space-y-5">
+      <main className="mt-6 space-y-6">
         <SearchModeSelect
           searchMode={searchMode}
           isLoggedIn={user}
