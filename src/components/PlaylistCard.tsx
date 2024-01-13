@@ -8,7 +8,7 @@ interface PlaylistCardProps {
 
 function PlaylistCard({ title, author, coverImage }: PlaylistCardProps) {
   return (
-    <article className="flex bg-slate-800 border border-slate-700 rounded-md shadow-lg">
+    <article className="flex max-w-md mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
       <img
         src={coverImage}
         alt=""

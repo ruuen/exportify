@@ -22,7 +22,7 @@ function App() {
   return (
     <>
       <PageHeader />
-      <main className="mt-6 space-y-6">
+      <main className="mt-6 mx-auto space-y-6 lg:mt-10 lg:space-y-10 lg:max-w-5xl">
         <SearchModeSelect
           searchMode={searchMode}
           isLoggedIn={user}

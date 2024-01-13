@@ -18,7 +18,7 @@ function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
       action="get"
       autoComplete="off"
       onSubmit={handleSubmit(handlePlaylistSearch)}
-      className="p-5 bg-slate-800 border border-slate-700 rounded-md shadow-lg"
+      className="p-5 max-w-md mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg"
     >
       <label className="sr-only" htmlFor="playlistUrl">
         Public playlist to export

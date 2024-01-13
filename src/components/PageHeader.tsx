@@ -2,7 +2,7 @@ import ButtonLink from "./ButtonLink";
 
 function PageHeader() {
   return (
-    <header className="space-y-5">
+    <header className="space-y-5 mx-auto lg:flex lg:space-y-0 lg:max-w-5xl">
       <div className="space-y-4">
         <h1 className="font-semibold text-4xl text-slate-100">Exportify</h1>
         <h2 className="text-xl">
@@ -30,7 +30,7 @@ function PageHeader() {
         </div>
       </div>
 
-      <nav className="flex gap-3 flex-wrap">
+      <nav className="flex flex-1 gap-3 flex-wrap lg:flex-col lg:items-end lg:justify-center">
         <ButtonLink
           href="#"
           text="Log in with Spotify"
