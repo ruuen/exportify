@@ -31,7 +31,7 @@ function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
               "Field is empty; please enter a valid Spotify playlist URL.",
           })}
           placeholder="Enter a public playlist URL..."
-          className="block w-full py-2 px-3 bg-slate-900 border border-slate-700 text-slate-100 rounded-md"
+          className="block w-full py-2 px-3 bg-slate-900 border border-slate-700 text-slate-100 placeholder:text-slate-700 rounded-md"
         />
 
         <Button
