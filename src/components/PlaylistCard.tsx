@@ -8,21 +8,23 @@ interface PlaylistCardProps {
 
 function PlaylistCard({ title, author, coverImage }: PlaylistCardProps) {
   return (
-    <article className="flex max-w-md mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
+    <article className="flex max-w-md h-full md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
       <img
         src={coverImage}
         alt=""
         className="max-w-32 rounded-l-md object-cover"
       />
-      <div className="flex-1 p-5 space-y-3">
-        <h4 className="font-medium text-slate-100">{title}</h4>
-        <a
-          className="break-all hover:text-slate-100 transition-colors"
-          href="#"
-        >
-          @{author}
-        </a>
-        <ul className="flex flex-wrap gap-2">
+      <div className="flex flex-1 p-5 flex-col gap-3">
+        <div>
+          <h4 className="font-medium text-slate-100">{title}</h4>
+          <a
+            className="break-all hover:text-slate-100 transition-colors"
+            href="#"
+          >
+            @{author}
+          </a>
+        </div>
+        <ul className="flex flex-wrap gap-2 mt-auto">
           <li>
             <ButtonLink text="CSV" href="#" colourScheme="light" />
           </li>
