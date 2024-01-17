@@ -4,9 +4,10 @@ import Button from "./Button";
 
 interface SearchFormProps {
   handlePlaylistSearch: (data: SearchFormInputs) => void;
+  isLoading: boolean;
 }
 
-function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
+function SearchForm({ handlePlaylistSearch, isLoading }: SearchFormProps) {
   const {
     register,
     handleSubmit,
@@ -39,6 +40,7 @@ function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
           text="Find..."
           colourScheme="light"
           isFullWidth={true}
+          isLoading={isLoading}
         />
       </div>
       {errors.playlistUrl && (

@@ -2,11 +2,13 @@ import { ComponentPropsWithoutRef } from "react";
 import { ButtonColourScheme } from "../types";
 import getButtonColourClasses from "../utils/getButtonColourClasses";
 import clsx from "clsx";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
   text: string;
   isFullWidth?: boolean;
   colourScheme?: ButtonColourScheme;
+  isLoading: boolean;
 }
 
 function Button(props: ButtonProps) {
@@ -14,6 +16,7 @@ function Button(props: ButtonProps) {
     text,
     isFullWidth = false,
     colourScheme = "default",
+    isLoading,
     ...baseProps
   } = props;
 
@@ -29,7 +32,8 @@ function Button(props: ButtonProps) {
         },
       ])}
     >
-      {text}
+      {isLoading && <LoadingSpinner />}
+      {!isLoading && text}
     </button>
   );
 }

@@ -20,9 +20,10 @@ function PublicPlaylistView() {
 
   return (
     <>
-      {/* TODO: isLoading passed as prop to SearchForm, loader displayed within form submit btn */}
-      <SearchForm handlePlaylistSearch={handlePlaylistSearch} />
-      {isLoading && <span>This is a test loading message...</span>}
+      <SearchForm
+        handlePlaylistSearch={handlePlaylistSearch}
+        isLoading={isLoading}
+      />
       {playlist && (
         <PlaylistCard
           errorState={errorState}
