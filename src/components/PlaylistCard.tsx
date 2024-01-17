@@ -1,6 +1,6 @@
 import { PlaylistImage, ResponseError } from "../types";
 import ButtonLink from "./ButtonLink";
-import imgPlaceholderCover from "../assets/placeholder-cover.jpg";
+import imgPlaceholderCover from "../assets/placeholder-cover.webp";
 
 interface PlaylistCardProps {
   coverImages: Array<PlaylistImage>;
