@@ -9,3 +9,31 @@ export interface SpotifyUser {
 export interface SearchFormInputs {
   playlistUrl: string;
 }
+
+export interface AccessToken {
+  access_token: string;
+  token_type: string;
+  scope?: string;
+  expires_in: number;
+}
+
+export interface ResponseError {
+  error: {
+    status: number;
+    message: string;
+  };
+}
+
+export interface Playlist {
+  id: string;
+  name: string;
+  external_urls: {
+    spotify: string;
+  };
+  owner: {
+    display_name: string;
+    external_urls: {
+      spotify: string;
+    };
+  };
+}

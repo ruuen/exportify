@@ -2,6 +2,7 @@ import { SearchMode, SpotifyUser } from "./types";
 import { useState } from "react";
 import PageHeader from "./components/PageHeader";
 import SearchModeSelect from "./components/SearchModeSelect";
+import ErrorBoundary from "./components/ErrorBoundary";
 import PublicPlaylistView from "./components/PublicPlaylistView";
 import PrivatePlaylistView from "./components/PrivatePlaylistView";
 
@@ -29,8 +30,10 @@ function App() {
           isLoggedIn={user}
           handleClick={changeSearchMode}
         />
-        {searchMode === "public" && <PublicPlaylistView />}
-        {searchMode === "private" && <PrivatePlaylistView />}
+        <ErrorBoundary fallback={<p>Something went wrong... testing</p>}>
+          {searchMode === "public" && <PublicPlaylistView />}
+          {searchMode === "private" && <PrivatePlaylistView />}
+        </ErrorBoundary>
       </main>
     </>
   );

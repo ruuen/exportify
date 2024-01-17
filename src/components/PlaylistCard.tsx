@@ -6,9 +6,10 @@ interface PlaylistCardProps {
   author: string;
 }
 
+// TODO: Update this component to respond to error props
 function PlaylistCard({ title, author, coverImage }: PlaylistCardProps) {
   return (
-    <article className="flex max-w-md h-full md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
+    <article className="flex max-w-md h-full min-h-32 md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
       <img
         src={coverImage}
         alt=""
