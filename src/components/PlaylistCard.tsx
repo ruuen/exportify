@@ -32,10 +32,20 @@ function PlaylistCard({
     coverImages.length > 0 ? coverImages[0] : placeholderCoverImage;
 
   return (
-    <article className="flex max-w-md h-full min-h-32 md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
+    <article className="flex max-w-md h-full min-h-36 md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
       {errorState && (
-        <div className="p-5 m-auto text-center text-xl">
-          <p>{errorState.error.message}</p>
+        <div className="flex flex-1 gap-3 items-center">
+          <img
+            src={placeholderCoverImage.url}
+            alt=""
+            className="max-w-32 h-full rounded-l-md object-cover"
+            width={300}
+            height={300}
+          />
+          <div className="space-y-2 px-2">
+            <p className="text-xl text-slate-100">{errorState.error.message}</p>
+            <p>Please try again...</p>
+          </div>
         </div>
       )}
       {!errorState && (
