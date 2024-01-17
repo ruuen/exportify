@@ -36,4 +36,11 @@ export interface Playlist {
       spotify: string;
     };
   };
+  images: Array<PlaylistImage>;
+}
+
+export interface PlaylistImage {
+  width?: number;
+  height?: number;
+  url: string;
 }

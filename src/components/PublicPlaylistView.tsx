@@ -29,7 +29,7 @@ function PublicPlaylistView() {
           errorState={errorState}
           title={playlist.name}
           author={playlist.owner.display_name}
-          coverImage="https://images.unsplash.com/photo-1703401895640-bf1b9f6c803e?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=300&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTcwNTIxMzQ1MA&ixlib=rb-4.0.3&q=80&w=300"
+          coverImages={playlist.images}
         />
       )}
     </>

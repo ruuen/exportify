@@ -1,20 +1,36 @@
-import { ResponseError } from "../types";
+import { PlaylistImage, ResponseError } from "../types";
 import ButtonLink from "./ButtonLink";
+import imgPlaceholderCover from "../assets/placeholder-cover.jpg";
 
 interface PlaylistCardProps {
-  coverImage: string;
+  coverImages: Array<PlaylistImage>;
   title: string;
   author: string;
   errorState: ResponseError | null;
 }
 
-// TODO: Update this component to respond to error props
+const placeholderCoverImage = {
+  width: 300,
+  height: 300,
+  url: imgPlaceholderCover,
+};
+
+// Images info returned for playlist from API will have varying items inside
+// https://developer.spotify.com/documentation/web-api/concepts/playlists#using-playlist-images
+// If playlist has 0 songs, no images are returned
+// If playlist has a custom image applied, one image will be returned with null width/height props
+// If playlist has 1 to 3 tracks or has tracks from less than 4 different albums, one 640x640 image will be returned
+// If playlist has tracks from 4 or more albums, up to 4 images will be returned, varying from 640x640; 300x300; 60x60.
+// Largest image returned at first index in response array
 function PlaylistCard({
   title,
   author,
-  coverImage,
+  coverImages,
   errorState,
 }: PlaylistCardProps) {
+  const activeCoverImage =
+    coverImages.length > 0 ? coverImages[0] : placeholderCoverImage;
+
   return (
     <article className="flex max-w-md h-full min-h-32 md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">
       {errorState && (
@@ -25,9 +41,11 @@ function PlaylistCard({
       {!errorState && (
         <>
           <img
-            src={coverImage}
+            src={activeCoverImage.url}
             alt=""
-            className="max-w-32 rounded-l-md object-cover"
+            className="max-w-32  h-auto rounded-l-md object-cover"
+            width={300}
+            height={300}
           />
           <div className="flex flex-1 p-5 flex-col gap-3">
             <div>
