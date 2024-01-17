@@ -13,6 +13,8 @@ function PublicPlaylistView() {
       const playlistId = extractIdFromPlaylistURL(
         new URL(formData.playlistUrl)
       );
+      // This "fields" param returns fields from playlist endpoint matching my Playlist type declaration
+      // https://developer.spotify.com/documentation/web-api/reference/get-playlist
       const queryParams = new URLSearchParams({
         fields:
           "id,name,external_urls(spotify),owner(display_name,external_urls(spotify)),images(width,height,url),tracks(total)",
