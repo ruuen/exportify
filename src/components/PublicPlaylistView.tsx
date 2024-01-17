@@ -13,7 +13,12 @@ function PublicPlaylistView() {
       const playlistId = extractIdFromPlaylistURL(
         new URL(formData.playlistUrl)
       );
-      await callApi(`playlists/${playlistId}`);
+      const queryParams = new URLSearchParams({
+        fields:
+          "id,name,external_urls(spotify),owner(display_name,external_urls(spotify)),images(width,height,url),tracks(total)",
+      });
+
+      await callApi(`playlists/${playlistId}?${queryParams.toString()}`);
     },
     []
   );

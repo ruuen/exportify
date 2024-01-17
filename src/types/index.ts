@@ -37,6 +37,9 @@ export interface Playlist {
     };
   };
   images: Array<PlaylistImage>;
+  tracks: {
+    total: number;
+  };
 }
 
 export interface PlaylistImage {
