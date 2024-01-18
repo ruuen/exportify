@@ -3,6 +3,17 @@ import ButtonLink from "./ButtonLink";
 import imgPlaceholderCover from "../assets/placeholder-cover.webp";
 
 interface PlaylistCardProps {
+  /** Playlist ID passed as prop and used in API queries during export process when either button is clicked. */
+  playlistId: string;
+  /**
+   * Images array returned for playlist from API will have varying items inside them.
+   * (https://developer.spotify.com/documentation/web-api/concepts/playlists#using-playlist-images)
+   * If playlist has 0 songs, no images are returned.
+   * If playlist has a custom image applied, one image will be returned with null width/height props.
+   * If playlist has 1 to 3 tracks or has tracks from less than 4 different albums, one 640x640 image will be returned.
+   * If playlist has tracks from 4 or more albums, up to 4 images will be returned, varying from 640x640; 300x300; 60x60.
+   * Largest image returned at first index in response array.
+   */
   coverImages: Array<PlaylistImage>;
   title: string;
   author: string;
@@ -15,14 +26,8 @@ const placeholderCoverImage = {
   url: imgPlaceholderCover,
 };
 
-// Images info returned for playlist from API will have varying items inside
-// https://developer.spotify.com/documentation/web-api/concepts/playlists#using-playlist-images
-// If playlist has 0 songs, no images are returned
-// If playlist has a custom image applied, one image will be returned with null width/height props
-// If playlist has 1 to 3 tracks or has tracks from less than 4 different albums, one 640x640 image will be returned
-// If playlist has tracks from 4 or more albums, up to 4 images will be returned, varying from 640x640; 300x300; 60x60.
-// Largest image returned at first index in response array
 function PlaylistCard({
+  playlistId,
   title,
   author,
   coverImages,

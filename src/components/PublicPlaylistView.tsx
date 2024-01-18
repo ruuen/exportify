@@ -33,6 +33,7 @@ function PublicPlaylistView() {
       />
       {playlist && (
         <PlaylistCard
+          playlistId={playlist.id}
           errorState={errorState}
           title={playlist.name}
           author={playlist.owner.display_name}
