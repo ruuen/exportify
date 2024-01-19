@@ -1,6 +1,6 @@
 import { PlaylistImage, ResponseError } from "../types";
-import ButtonLink from "./ButtonLink";
 import imgPlaceholderCover from "../assets/placeholder-cover.webp";
+import Button from "./Button";
 
 interface PlaylistCardProps {
   /** Playlist ID passed as prop and used in API queries during export process when either button is clicked. */
@@ -74,10 +74,10 @@ function PlaylistCard({
             </div>
             <ul className="flex flex-wrap gap-2 mt-auto">
               <li>
-                <ButtonLink text="CSV" href="#" colourScheme="light" />
+                <Button text="CSV" isLoading={false} colourScheme="light" />
               </li>
               <li>
-                <ButtonLink text="JSON" href="#" colourScheme="light" />
+                <Button text="JSON" isLoading={false} colourScheme="light" />
               </li>
             </ul>
           </div>

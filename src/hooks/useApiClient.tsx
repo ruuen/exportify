@@ -48,6 +48,10 @@ function useApiClient<T>(
     []
   );
 
+  // TODO:  I probably don't need this effect if I do not end up using the hook in this way.
+  //        I wanted the option of calling the data by setting endpoint on init/changing endpoint, or calling callApi() with params
+  //        Simpler use-cases like getting data on-mount or getting updated data when endpoint changes could be handled with less code,
+  //        while more complex cases like posting data or doing other operations on it would leverage the callApi().
   useEffect(() => {
     if (typeof endpoint === "undefined" || endpoint === "") return;
 
