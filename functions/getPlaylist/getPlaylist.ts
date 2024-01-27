@@ -1,9 +1,15 @@
 import { Context } from "@netlify/functions";
-import {
-  extractIdFromPlaylistUrl,
-  getBasicAccessToken,
-  throwOperationalError,
-} from "../utils";
+import { getBasicAccessToken, throwOperationalError } from "../utils";
+/**
+ * Spotify playlists are queried based on their playlist ID, which needs to be split from the playlist URL's path.
+ *
+ * @param playlistUrl Full Spotify playlist URL, generated from sharing the playlist and copying the link.
+ * @returns String of a Spotify playlist ID.
+ */
+function extractIdFromPlaylistUrl(playlistUrl: URL): string {
+  const playlistId = playlistUrl.pathname.split("/playlist/")[1];
+  return playlistId;
+}
 
 /** Take a Spotify playlist URL from query param, return playlist details from Spotify API */
 export default async (req: Request, context: Context) => {

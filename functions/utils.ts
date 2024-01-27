@@ -43,17 +43,6 @@ async function getBasicAccessToken(
 }
 
 /**
- * Spotify playlists are queried based on their playlist ID, which needs to be split from the playlist URL's path.
- *
- * @param playlistUrl Full Spotify playlist URL, generated from sharing the playlist and copying the link.
- * @returns String of a Spotify playlist ID.
- */
-function extractIdFromPlaylistUrl(playlistUrl: URL): string {
-  const playlistId = playlistUrl.pathname.split("/playlist/")[1];
-  return playlistId;
-}
-
-/**
  * Helper for returning an error response to client from lambda func.
  *
  * Optionally logs a message to the lambda func's logs if serverMessage param is specified.
@@ -82,4 +71,4 @@ function throwOperationalError(
   );
 }
 
-export { getBasicAccessToken, extractIdFromPlaylistUrl, throwOperationalError };
+export { getBasicAccessToken, throwOperationalError };
