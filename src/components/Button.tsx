@@ -8,7 +8,7 @@ interface ButtonProps extends ComponentPropsWithoutRef<"button"> {
   text: string;
   isFullWidth?: boolean;
   colourScheme?: ButtonColourScheme;
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 function Button(props: ButtonProps) {

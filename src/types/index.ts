@@ -45,22 +45,16 @@ export interface PlaylistImage {
   url: string;
 }
 
-export interface PlaylistData {
-  total: number;
-  limit: number;
-  offset: number;
-  next?: string;
-  items: Array<Track>;
-}
-
-export interface Track {
-  name: string;
-  album: {
+export type PlaylistData = [
+  {
     name: string;
-  };
-  artists: [
-    {
+    album: {
       name: string;
-    }
-  ];
-}
+    };
+    artists: [
+      {
+        name: string;
+      }
+    ];
+  }
+];
