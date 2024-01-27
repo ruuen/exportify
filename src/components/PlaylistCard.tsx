@@ -48,7 +48,7 @@ function PlaylistCard({
             height={300}
           />
           <div className="space-y-2 px-2">
-            <p className="text-xl text-slate-100">{errorState.error.message}</p>
+            <p className="text-lg text-slate-100">{errorState.message}</p>
             <p>Please try again...</p>
           </div>
         </div>

@@ -71,9 +71,15 @@ function throwOperationalError(
   if (serverMessage) console.log(serverMessage);
 
   // Return simple error to client
-  return new Response(JSON.stringify(clientMessage), {
-    status: httpCode,
-  });
+  return new Response(
+    JSON.stringify({
+      message: clientMessage,
+    }),
+    {
+      status: httpCode,
+      headers: new Headers({ "Content-Type": "application/json" }),
+    }
+  );
 }
 
 export { getBasicAccessToken, extractIdFromPlaylistUrl, throwOperationalError };

@@ -18,10 +18,7 @@ export interface AccessToken {
 }
 
 export interface ResponseError {
-  error: {
-    status: number;
-    message: string;
-  };
+  message: string;
 }
 
 export interface Playlist {

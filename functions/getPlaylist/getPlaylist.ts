@@ -40,7 +40,10 @@ export default async (req: Request, context: Context) => {
     )
       throw new Error();
   } catch (error) {
-    return throwOperationalError(400, "A valid Spotify URL was not provided");
+    return throwOperationalError(
+      400,
+      "A valid Spotify playlist URL was not provided"
+    );
   }
 
   // Get playlist ID from submitted URL for usage in Spotify API query
@@ -103,7 +106,10 @@ export default async (req: Request, context: Context) => {
 
     // Otherwise we're all golden and gucci to go ahead
     const data = await response.json();
-    return new Response(JSON.stringify(data));
+    return new Response(JSON.stringify(data), {
+      status: 200,
+      headers: new Headers({ "Content-Type": "application/json" }),
+    });
   } catch (error) {
     return throwOperationalError(
       500,
