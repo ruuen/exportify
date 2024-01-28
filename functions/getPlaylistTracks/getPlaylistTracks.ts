@@ -72,16 +72,12 @@ export default async (req: Request, context: Context) => {
     const response = await fetch(next || initialEndpoint, { headers: headers });
     const data: PlaylistData = await response.json();
 
-    console.log("QUERY MADE:");
-
     if (!data.next) {
-      console.log("NO FURTHER DATA. RETURNING ALL.");
       fullTrackList.push(...data.items);
       isQueryComplete = true;
       continue;
     }
 
-    console.log("MORE DATA TO GO. NEXT QUERY SHOULD OCCUR");
     next = data.next;
     fullTrackList.push(...data.items);
   }
