@@ -23,6 +23,7 @@ function Button(props: ButtonProps) {
   return (
     <button
       {...baseProps}
+      name={text}
       className={clsx([
         "block py-2 px-5 rounded-lg shadow-md border transition-colors",
         getButtonColourClasses(colourScheme),

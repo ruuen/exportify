@@ -1,5 +1,6 @@
 export type SearchMode = "public" | "private";
 export type ButtonColourScheme = "default" | "spotify" | "light";
+export type FileFormat = "csv" | "json";
 
 export interface SpotifyUser {
   // TODO: replace fields with actual representation when building Spotify API functionality
@@ -45,16 +46,16 @@ export interface PlaylistImage {
   url: string;
 }
 
-export type PlaylistData = [
-  {
+export type PlaylistData = [{ track: PlaylistItem }];
+
+export interface PlaylistItem {
+  name: string;
+  album: {
     name: string;
-    album: {
+  };
+  artists: [
+    {
       name: string;
-    };
-    artists: [
-      {
-        name: string;
-      }
-    ];
-  }
-];
+    }
+  ];
+}

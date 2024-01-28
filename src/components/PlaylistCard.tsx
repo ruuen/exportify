@@ -1,4 +1,4 @@
-import { PlaylistImage, ResponseError } from "../types";
+import { FileFormat, PlaylistImage, ResponseError } from "../types";
 import imgPlaceholderCover from "../assets/placeholder-cover.webp";
 import Button from "./Button";
 import useExporter from "../hooks/useExporter";
@@ -21,6 +21,19 @@ interface PlaylistCardProps {
   errorState: ResponseError | null;
 }
 
+interface CardDisplayProps {
+  coverImage: PlaylistImage;
+  title: string;
+  author: string;
+  handleClick: (fileFormat: FileFormat) => void;
+  isLoading: boolean;
+  btnError: ResponseError | null;
+}
+
+interface CardErrorProps {
+  message: string;
+}
+
 const placeholderCoverImage = {
   width: 300,
   height: 300,
@@ -35,7 +48,7 @@ function PlaylistCard({
   errorState,
 }: PlaylistCardProps) {
   const {
-    getFullPlaylist,
+    triggerExport,
     isLoading,
     errorState: dataErrorState,
   } = useExporter(playlistId);
@@ -51,22 +64,15 @@ function PlaylistCard({
           coverImage={activeCoverImage}
           title={title}
           author={author}
-          handleClick={getFullPlaylist}
+          handleClick={(fileFormat: FileFormat) =>
+            triggerExport(fileFormat, title)
+          }
           isLoading={isLoading}
           btnError={dataErrorState}
         />
       )}
     </article>
   );
-}
-
-interface CardDisplayProps {
-  coverImage: PlaylistImage;
-  title: string;
-  author: string;
-  handleClick: () => void;
-  isLoading: boolean;
-  btnError: ResponseError | null;
 }
 
 function CardDisplay({
@@ -104,7 +110,7 @@ function CardDisplay({
                 text="CSV"
                 isLoading={isLoading}
                 colourScheme="light"
-                onClick={handleClick}
+                onClick={() => handleClick("csv")}
               />
             </li>
             <li>
@@ -112,7 +118,7 @@ function CardDisplay({
                 text="JSON"
                 isLoading={isLoading}
                 colourScheme="light"
-                onClick={handleClick}
+                onClick={() => handleClick("json")}
               />
             </li>
           </ul>
@@ -126,10 +132,6 @@ function CardDisplay({
       </div>
     </>
   );
-}
-
-interface CardErrorProps {
-  message: string;
 }
 
 function CardError({ message }: CardErrorProps) {
