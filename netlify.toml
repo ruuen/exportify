@@ -2,7 +2,15 @@
 publish = "dist"
 functions = "functions"
 
+# Redirect backend /api/ route to netlify function dir
 [[redirects]]
 from = "/api/*"
 to = "/.netlify/functions/:splat"
 status = 200
+
+# Enforce Netlify domain redirect to prod domain
+[[redirects]]
+from = "https://mbr-exportify.netlify.app/*"
+to = "https://exportify.madebyruuen.com/:splat"
+status = 301
+force = true
