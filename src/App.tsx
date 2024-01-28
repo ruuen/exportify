@@ -8,7 +8,7 @@ import PrivatePlaylistView from "./components/PrivatePlaylistView";
 
 function App() {
   const [searchMode, setSearchMode] = useState<SearchMode>("public");
-  const [user, setUser] = useState<SpotifyUser | null>(null);
+  const [user] = useState<SpotifyUser | null>(null);
 
   function changeSearchMode(e: React.MouseEvent<HTMLButtonElement>) {
     switch (e.currentTarget.dataset.mode) {
