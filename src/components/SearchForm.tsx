@@ -4,9 +4,10 @@ import Button from "./Button";
 
 interface SearchFormProps {
   handlePlaylistSearch: (data: SearchFormInputs) => void;
+  isLoading: boolean;
 }
 
-function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
+function SearchForm({ handlePlaylistSearch, isLoading }: SearchFormProps) {
   const {
     register,
     handleSubmit,
@@ -18,7 +19,7 @@ function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
       action="get"
       autoComplete="off"
       onSubmit={handleSubmit(handlePlaylistSearch)}
-      className="p-5 max-w-md mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg"
+      className="p-5 bg-slate-800 border border-slate-700 rounded-md shadow-lg"
     >
       <label className="sr-only" htmlFor="playlistUrl">
         Public playlist to export
@@ -39,6 +40,7 @@ function SearchForm({ handlePlaylistSearch }: SearchFormProps) {
           text="Find..."
           colourScheme="light"
           isFullWidth={true}
+          isLoading={isLoading}
         />
       </div>
       {errors.playlistUrl && (
