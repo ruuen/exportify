@@ -24,7 +24,7 @@ function PublicPlaylistView() {
   );
 
   return (
-    <>
+    <div className="space-y-6 max-w-md mx-auto">
       <SearchForm
         handlePlaylistSearch={handlePlaylistSearch}
         isLoading={isLoading}
@@ -39,7 +39,7 @@ function PublicPlaylistView() {
           coverImages={playlist.images}
         />
       )}
-    </>
+    </div>
   );
 }
 
