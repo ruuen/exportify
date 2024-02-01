@@ -4,7 +4,7 @@ import { throwOperationalError } from "../utils";
 
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 
-/** Receive nonce from param, generate state param for Spotify auth request, store in DynamoDb, return redirect to Spotify auth endpoint */
+/** Receive nonce from cookie, generate state param for Spotify auth request, store in DynamoDb, return redirect to Spotify auth endpoint */
 export default (req: Request, context: Context) => {
   // If no Spotify API credentials provided as env var, return server error
   if (!SPOTIFY_CLIENT_ID) {
@@ -15,9 +15,8 @@ export default (req: Request, context: Context) => {
     );
   }
 
-  // If nonce not provided as request param, return client error
-  const requestParams = new URL(req.url).searchParams;
-  const nonce = requestParams.get("nonce");
+  // If nonce not provided as cookie, return client error
+  const nonce = context.cookies.get("exportify-nonce");
   if (!nonce) {
     return throwOperationalError(400, "Bad request");
   }
