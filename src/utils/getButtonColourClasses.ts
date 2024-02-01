@@ -21,6 +21,15 @@ function getButtonColourClasses(colourSchemeName: ButtonColourScheme): string {
         "text-slate-100",
         "hover:text-slate-50",
       ]);
+    case "warning":
+      return clsx([
+        "bg-red-800",
+        "hover:bg-red-700",
+        "border-red-700",
+        "hover:border-red-600",
+        "text-slate-100",
+        "hover:text-slate-50",
+      ]);
     default:
       return clsx([
         "bg-slate-800",
