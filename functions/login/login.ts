@@ -42,7 +42,7 @@ export default (req: Request, context: Context) => {
   ]);
 
   return new Response(null, {
-    status: 301,
+    status: 302,
     headers: {
       Location: `https://accounts.spotify.com/authorize?${responseParams.toString()}`,
     },
