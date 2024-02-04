@@ -35,18 +35,30 @@ export default (req: Request, context: Context) => {
   // Retrieve access token from Spotify API
 
   // Return access token as httpOnly cookie, return logged in state, delete nonce cookie from browser
-  return new Response(null, {
-    status: 302,
-    headers: new Headers([
-      ["Location", "http://localhost:8888/"],
-      [
-        "Set-Cookie",
-        "exportify-nonce=null; Path=/api; Max-Age=0; SameSite=lax; Domain=localhost;",
-      ],
-      [
-        "Set-Cookie",
-        "isLoggedIn=true; Path=/; Max-Age=3600; SameSite=strict; Domain=localhost;",
-      ],
-    ]),
-  });
+  try {
+    // Deploy url provided by function context param
+    if (!context.site.url) throw new Error("Site url not provided in context");
+    const deployUrl = new URL(context.site.url);
+
+    return new Response(null, {
+      status: 302,
+      headers: new Headers([
+        ["Location", deployUrl.toString()],
+        [
+          "Set-Cookie",
+          `exportify-nonce=null; Path=/api; Max-Age=0; SameSite=lax; Domain=${deployUrl.hostname};`,
+        ],
+        [
+          "Set-Cookie",
+          `isLoggedIn=true; Path=/; Max-Age=3600; SameSite=strict; Domain=${deployUrl.hostname};`,
+        ],
+      ]),
+    });
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had a problem during the Spotify login process",
+      `Could not retrieve domain from site url in current request context: ${error}`
+    );
+  }
 };

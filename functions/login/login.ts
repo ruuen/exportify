@@ -32,19 +32,30 @@ export default (req: Request, context: Context) => {
   const spotifyAccessScope = "playlist-read-private";
 
   // Return redirect as response
-  const responseParams = new URLSearchParams([
-    ["response_type", "code"],
-    ["client_id", SPOTIFY_CLIENT_ID],
-    ["scope", spotifyAccessScope],
-    // TODO: dynamically get this URL from netlify context obj based on deploy context
-    ["redirect_uri", "http://localhost:8888/api/auth"],
-    ["state", stateToken],
-  ]);
+  try {
+    // Deploy url provided by function context param
+    if (!context.site.url) throw new Error("Site url not provided in context");
+    const deployUrl = new URL(context.site.url);
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: `https://accounts.spotify.com/authorize?${responseParams.toString()}`,
-    },
-  });
+    const responseParams = new URLSearchParams([
+      ["response_type", "code"],
+      ["client_id", SPOTIFY_CLIENT_ID],
+      ["scope", spotifyAccessScope],
+      ["redirect_uri", `${deployUrl.toString()}/api/auth`],
+      ["state", stateToken],
+    ]);
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `https://accounts.spotify.com/authorize?${responseParams.toString()}`,
+      },
+    });
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had a problem during the Spotify login process",
+      `Could not build function response param object: ${error}`
+    );
+  }
 };
