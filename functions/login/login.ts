@@ -41,7 +41,7 @@ export default (req: Request, context: Context) => {
       ["response_type", "code"],
       ["client_id", SPOTIFY_CLIENT_ID],
       ["scope", spotifyAccessScope],
-      ["redirect_uri", `${deployUrl.toString()}/api/auth`],
+      ["redirect_uri", `${deployUrl.toString()}api/auth`],
       ["state", stateToken],
     ]);
 
