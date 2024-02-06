@@ -1,10 +1,27 @@
 import { Context } from "@netlify/functions";
 import { throwOperationalError } from "../utils";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DeleteCommand,
+  DynamoDBDocumentClient,
+  GetCommand,
+} from "@aws-sdk/lib-dynamodb";
 
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 const SPOTIFY_CLIENT_SECRET = Netlify.env.get("SPOTIFY_CLIENT_SECRET");
+const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
+const DYNAMODB_ACCESS_KEY_SECRET =
+  Netlify.env.get("DYNAMODB_ACCESS_KEY_SECRET") || "";
+const dbClient = new DynamoDBClient({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: DYNAMODB_ACCESS_KEY_ID,
+    secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
+  },
+});
+const docClient = DynamoDBDocumentClient.from(dbClient);
 
-export default (req: Request, context: Context) => {
+export default async (req: Request, context: Context) => {
   // Reject request with server error if function can't retrieve Spotify API key environment vars
   if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
     return throwOperationalError(
@@ -17,7 +34,12 @@ export default (req: Request, context: Context) => {
   // If nonce not provided as cookie, return client error
   const nonce = context.cookies.get("exportify-nonce");
   if (!nonce) {
-    return throwOperationalError(400, "Bad request");
+    return throwOperationalError(
+      400,
+      "Bad request",
+      // I probably need to be aware of this happening frequently, so sending to function logs
+      "A request was made to the auth endpoint without a nonce cookie"
+    );
   }
 
   // If code or state params not defined, return client error
@@ -25,12 +47,71 @@ export default (req: Request, context: Context) => {
   const code = requestParams.get("code");
   const stateToken = requestParams.get("state");
   if (!code || !stateToken) {
-    return throwOperationalError(400, "Bad request");
+    return throwOperationalError(
+      400,
+      "Bad request",
+      // I probably need to be aware of this happening frequently, so sending to function logs
+      "A request was made to the auth endpoint without a code or state token"
+    );
   }
 
-  // Select nonce & state token from dynamodb
-  // If stored state token for nonce key doesn't match state param and nonce cookie, return client error
-  // TODO: Implement this
+  // Select nonce/state pair from dynamodb based on request values
+  // Reject auth if no matching pair found
+  try {
+    const tableName = "ExportifyStateToken";
+    const getTokenCommand = new GetCommand({
+      TableName: tableName,
+      Key: {
+        user_nonce: nonce,
+        state_token: stateToken,
+      },
+    });
+    const tokenResponse = await docClient.send(getTokenCommand);
+
+    // If query rejected due to an error, return server error
+    if (tokenResponse.$metadata.httpStatusCode !== 200) {
+      throw new Error(
+        `Could not get token from dynamodb: ${JSON.stringify(
+          tokenResponse.$metadata
+        )}`
+      );
+    }
+
+    // TODO: handle dyndb timeout if throttled
+
+    // If no item returned from dynamodb, the nonce/token pair provided in request is wrong, return client error
+    if (!tokenResponse.Item) {
+      return throwOperationalError(
+        400,
+        "Bad request",
+        // I probably need to be aware of this happening frequently, so sending to function logs
+        `A state token couldn't be found for pair "${nonce}:${stateToken}"`
+      );
+    }
+
+    // Token in db is no longer required
+    const deleteTokenCommand = new DeleteCommand({
+      TableName: tableName,
+      Key: {
+        user_nonce: nonce,
+        state_token: stateToken,
+      },
+    });
+    const deleteTokenResponse = await docClient.send(deleteTokenCommand);
+    if (deleteTokenResponse.$metadata.httpStatusCode !== 200) {
+      throw new Error(
+        `Could not delete token from dynamodb: ${JSON.stringify(
+          deleteTokenResponse.$metadata
+        )}`
+      );
+    }
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had an issue during your login request to Spotify.",
+      `Error during authentication process: ${error}`
+    );
+  }
 
   // Retrieve access token from Spotify API
 
