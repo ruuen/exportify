@@ -1,11 +1,24 @@
 import { Context } from "@netlify/functions";
 import { randomBytes } from "crypto";
 import { throwOperationalError } from "../utils";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
+const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
+const DYNAMODB_ACCESS_KEY_SECRET =
+  Netlify.env.get("DYNAMODB_ACCESS_KEY_SECRET") || "";
+const dbClient = new DynamoDBClient({
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: DYNAMODB_ACCESS_KEY_ID,
+    secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
+  },
+});
+const docClient = DynamoDBDocumentClient.from(dbClient);
 
 /** Receive nonce from cookie, generate state param for Spotify auth request, store in DynamoDb, return redirect to Spotify auth endpoint */
-export default (req: Request, context: Context) => {
+export default async (req: Request, context: Context) => {
   // If no Spotify API credentials provided as env var, return server error
   if (!SPOTIFY_CLIENT_ID) {
     return throwOperationalError(
@@ -24,8 +37,28 @@ export default (req: Request, context: Context) => {
   // Generate a random 16-char string as state token
   const stateToken = randomBytes(8).toString("hex");
 
-  // Store state token in dynamodb with nonce as key
-  // TODO: implement this
+  // Store nonce/state token pair in dynamodb
+  try {
+    const cmd = new PutCommand({
+      TableName: "ExportifyStateToken",
+      Item: {
+        user_nonce: nonce,
+        state_token: stateToken,
+      },
+    });
+    const response = await docClient.send(cmd);
+
+    // If storage failed, return server error
+    if (response.$metadata.httpStatusCode !== 200) {
+      throw new Error(JSON.stringify(response.$metadata));
+    }
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had an issue generating your login request to Spotify.",
+      `Could not store nonce/token pair in DynamoDB due to error: ${error}`
+    );
+  }
 
   // Define required user permissions needed for the Spotify access token
   // Exportify only needs ability to read private playlists so it can retrieve a list of the user's playlists, and retrieve the items within a private playlist for the user's export.
