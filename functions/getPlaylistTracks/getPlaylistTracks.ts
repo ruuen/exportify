@@ -1,6 +1,6 @@
 import { Context } from "@netlify/functions";
-import { getBasicAccessToken, throwOperationalError } from "../utils";
-import { BasicAccessToken } from "../types";
+import { getAccessToken, throwOperationalError } from "../utils";
+import { SpotifyAccessToken } from "../types";
 
 interface Track {
   name: string;
@@ -47,7 +47,7 @@ export default async (req: Request, context: Context) => {
     );
   }
 
-  const accessToken: BasicAccessToken = await getBasicAccessToken(
+  const basicAccessToken: SpotifyAccessToken = await getAccessToken(
     SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET
   );
@@ -60,7 +60,7 @@ export default async (req: Request, context: Context) => {
   ]);
   const initialEndpoint = `${ROOT_ENDPOINT}/${playlistId}/tracks?${queryParams.toString()}`;
   const headers = new Headers({
-    Authorization: `Bearer ${accessToken.access_token}`,
+    Authorization: `Bearer ${basicAccessToken.access_token}`,
     "Content-Type": "application/json",
   });
 
