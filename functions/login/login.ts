@@ -4,12 +4,17 @@ import { throwOperationalError } from "../utils";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
+const DEPLOY_CONTEXT = Netlify.env.get("CONTEXT") || "";
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
 const DYNAMODB_ACCESS_KEY_SECRET =
   Netlify.env.get("DYNAMODB_ACCESS_KEY_SECRET") || "";
+const DYNAMODB_TABLE_NAME =
+  DEPLOY_CONTEXT === "production"
+    ? "ExportifyStateToken"
+    : "ExportifyDevStateToken";
 const dbClient = new DynamoDBClient({
-  region: "us-east-2",
+  region: DEPLOY_CONTEXT === "production" ? "us-east-2" : "ap-southeast-2",
   credentials: {
     accessKeyId: DYNAMODB_ACCESS_KEY_ID,
     secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
@@ -40,7 +45,7 @@ export default async (req: Request, context: Context) => {
   // Store nonce/state token pair in dynamodb
   try {
     const cmd = new PutCommand({
-      TableName: "ExportifyStateToken",
+      TableName: DYNAMODB_TABLE_NAME,
       Item: {
         user_nonce: nonce,
         state_token: stateToken,

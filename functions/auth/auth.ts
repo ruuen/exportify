@@ -6,15 +6,19 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { SpotifyAccessToken } from "../types";
 
+const DEPLOY_CONTEXT = Netlify.env.get("CONTEXT") || "";
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 const SPOTIFY_CLIENT_SECRET = Netlify.env.get("SPOTIFY_CLIENT_SECRET");
 const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
 const DYNAMODB_ACCESS_KEY_SECRET =
   Netlify.env.get("DYNAMODB_ACCESS_KEY_SECRET") || "";
+const DYNAMODB_TABLE_NAME =
+  DEPLOY_CONTEXT === "production"
+    ? "ExportifyStateToken"
+    : "ExportifyDevStateToken";
 const dbClient = new DynamoDBClient({
-  region: "us-east-2",
+  region: DEPLOY_CONTEXT === "production" ? "us-east-2" : "ap-southeast-2",
   credentials: {
     accessKeyId: DYNAMODB_ACCESS_KEY_ID,
     secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
@@ -59,9 +63,8 @@ export default async (req: Request, context: Context) => {
   // Select nonce/state pair from dynamodb based on request values
   // Reject auth if no matching pair found
   try {
-    const tableName = "ExportifyStateToken";
     const getTokenCommand = new GetCommand({
-      TableName: tableName,
+      TableName: DYNAMODB_TABLE_NAME,
       Key: {
         user_nonce: nonce,
         state_token: stateToken,
@@ -92,7 +95,7 @@ export default async (req: Request, context: Context) => {
 
     // Token in db is no longer required
     const deleteTokenCommand = new DeleteCommand({
-      TableName: tableName,
+      TableName: DYNAMODB_TABLE_NAME,
       Key: {
         user_nonce: nonce,
         state_token: stateToken,
