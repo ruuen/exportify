@@ -14,7 +14,7 @@ export default (req: Request, context: Context) => {
         ["Location", deployUrl.toString()],
         [
           "Set-Cookie",
-          `exportify-token=null; Domain=${deployUrl.hostname}; Path=/api; Max-Age=0; SameSite=strict;`,
+          `exportify-token=null; Domain=${deployUrl.hostname}; Path=/api; Max-Age=0; SameSite=strict; HttpOnly;`,
         ],
         [
           "Set-Cookie",

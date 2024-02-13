@@ -1,11 +1,12 @@
 import { Context } from "@netlify/functions";
-import { throwOperationalError } from "../utils";
+import { getAccessToken, throwOperationalError } from "../utils";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { SpotifyAccessToken } from "../types";
 
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 const SPOTIFY_CLIENT_SECRET = Netlify.env.get("SPOTIFY_CLIENT_SECRET");
@@ -113,25 +114,57 @@ export default async (req: Request, context: Context) => {
     );
   }
 
+  // Parse deploy url provided by function context param, reject if not provided/invalid
+  let deployUrl: URL;
+  try {
+    if (!context.site.url) throw new Error("Site url not provided in context");
+    deployUrl = new URL(context.site.url);
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had a problem during the Spotify login process",
+      `Could not retrieve domain from site url in current request context: ${error}`
+    );
+  }
+
   // Retrieve access token from Spotify API
+  let spotifyAccessToken: string;
+  try {
+    const accessTokenResponse = await getAccessToken(
+      SPOTIFY_CLIENT_ID,
+      SPOTIFY_CLIENT_SECRET,
+      "user",
+      code,
+      `${deployUrl.toString()}api/auth`
+    );
+
+    // TODO: Going to encrypt this token string
+    spotifyAccessToken = accessTokenResponse.access_token;
+  } catch (error) {
+    return throwOperationalError(
+      500,
+      "Exportify had a problem during the Spotify login process",
+      `Could not retrieve user-scoped access token from Spotify API: ${error}`
+    );
+  }
 
   // Return access token as httpOnly cookie, return logged in state, delete nonce cookie from browser
   try {
-    // Deploy url provided by function context param
-    if (!context.site.url) throw new Error("Site url not provided in context");
-    const deployUrl = new URL(context.site.url);
-
     return new Response(null, {
       status: 302,
       headers: new Headers([
         ["Location", deployUrl.toString()],
         [
           "Set-Cookie",
-          `exportify-nonce=null; Path=/api; Max-Age=0; SameSite=lax; Domain=${deployUrl.hostname};`,
+          `exportify-token=${spotifyAccessToken}; Domain=${deployUrl.hostname}; Path=/api; Max-Age=3600; SameSite=strict; HttpOnly;`,
         ],
         [
           "Set-Cookie",
           `isLoggedIn=true; Path=/; Max-Age=3600; SameSite=strict; Domain=${deployUrl.hostname};`,
+        ],
+        [
+          "Set-Cookie",
+          `exportify-nonce=null; Path=/api; Max-Age=0; SameSite=lax; Domain=${deployUrl.hostname};`,
         ],
       ]),
     });
