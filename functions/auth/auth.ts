@@ -1,5 +1,5 @@
 import { Context } from "@netlify/functions";
-import { getAccessToken, throwOperationalError } from "../utils";
+import { getAccessToken, encryptToken, throwOperationalError } from "../utils";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
@@ -8,6 +8,8 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 const DEPLOY_CONTEXT = Netlify.env.get("CONTEXT") || "";
+const CIPHER_KEY = Netlify.env.get("CIPHER_KEY");
+const CIPHER_SALT = Netlify.env.get("CIPHER_SALT");
 const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
 const SPOTIFY_CLIENT_SECRET = Netlify.env.get("SPOTIFY_CLIENT_SECRET");
 const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
@@ -31,8 +33,17 @@ export default async (req: Request, context: Context) => {
   if (!SPOTIFY_CLIENT_ID || !SPOTIFY_CLIENT_SECRET) {
     return throwOperationalError(
       500,
-      "Exportify had a problem while retrieving your playlist details",
+      "Exportify had a problem while logging you into the Spotify API.",
       "Spotify API id or secret could not be loaded"
+    );
+  }
+
+  // Reject request with server error if encryption key/salt can't be retrieved
+  if (!CIPHER_KEY || !CIPHER_SALT) {
+    return throwOperationalError(
+      500,
+      "Exportify had a problem while logging you into the Spotify API.",
+      "Couldn't retrieve token encryption key details"
     );
   }
 
@@ -141,8 +152,13 @@ export default async (req: Request, context: Context) => {
       `${deployUrl.toString()}api/auth`
     );
 
-    // TODO: Going to encrypt this token string
-    spotifyAccessToken = accessTokenResponse.access_token;
+    // Encrypt access token string
+    const encryptedToken = await encryptToken(
+      accessTokenResponse.access_token,
+      CIPHER_KEY,
+      CIPHER_SALT
+    );
+    spotifyAccessToken = encryptedToken;
   } catch (error) {
     return throwOperationalError(
       500,
