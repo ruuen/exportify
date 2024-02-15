@@ -1,3 +1,9 @@
+import {
+  scrypt,
+  randomFill,
+  createCipheriv,
+  createDecipheriv,
+} from "node:crypto";
 import { SpotifyAccessToken } from "./types";
 
 /**
@@ -61,6 +67,74 @@ async function getAccessToken(
 
   return accessToken;
 }
+/**
+ * Perform symmetric AES-128 encryption on a returned token from Spotify before storing as clientside cookie.
+ *
+ * @param sourceToken ASCII string of a Spotify access token.
+ * @param secretKey Base64 string of a 128-bit AES key.
+ * @param salt Base64 string of a 128-bit salt value.
+ * @returns A promise returning the access token to a ciphered Base64 string.
+ */
+async function encryptToken(
+  sourceToken: string,
+  secretKey: string,
+  salt: string
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    scrypt(secretKey, salt, 16, (err, key) => {
+      if (err) reject(err);
+
+      randomFill(new Uint8Array(16), (err, iv) => {
+        if (err) reject(err);
+
+        try {
+          const cipher = createCipheriv("aes-128-cbc", key, iv);
+          let cipherText = Buffer.from(iv).toString("base64");
+          cipherText += cipher.update(sourceToken, "ascii", "base64");
+          cipherText += cipher.final("base64");
+          resolve(cipherText);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  });
+}
+
+/**
+ * Perform symmetric AES-128 decryption on a Base64 cipher string from client for usage on server.
+ *
+ * @param sourceCipher Ciphered text in Base64 string. The first 24-chars (128-bits) of the Base64 string should always contain the init vector (IV) used when first ciphering the text.
+ * @param secretKey Base64 string of a 128-bit AES key.
+ * @param salt Base64 string of a 128-bit salt value.
+ * @returns A promise returning the access token as a plaintext ASCII string.
+ */
+async function decryptToken(
+  sourceCipher: string,
+  secretKey: string,
+  salt: string
+) {
+  return new Promise((resolve, reject) => {
+    scrypt(secretKey, salt, 16, (err, key) => {
+      if (err) reject(err);
+
+      try {
+        const extractedIv = Buffer.from(
+          sourceCipher.substring(0, 24),
+          "base64"
+        );
+        const cipherText = sourceCipher.substring(24);
+
+        const decipher = createDecipheriv("aes-128-cbc", key, extractedIv);
+        let plaintext = decipher.update(cipherText, "base64", "ascii");
+        plaintext += decipher.final("ascii");
+        resolve(plaintext);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
 
 /**
  * Helper for returning an error response to client from lambda func.
@@ -91,4 +165,4 @@ function throwOperationalError(
   );
 }
 
-export { getAccessToken, throwOperationalError };
+export { getAccessToken, encryptToken, decryptToken, throwOperationalError };
