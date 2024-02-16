@@ -47,7 +47,7 @@ export default async (req: Request, context: Context) => {
   const stateToken = randomBytes(8).toString("hex");
 
   // Store nonce/state token pair in dynamodb
-  // Reject request if it's an unrecoverable dyndb error
+  // Reject request if an unrecoverable dyndb error occurs
   try {
     const cmd = new PutCommand({
       TableName: DYNAMODB_TABLE_NAME,

@@ -77,6 +77,7 @@ export default async (req: Request, context: Context) => {
 
   // Select nonce/state pair from dynamodb based on request values
   // Reject auth if no matching pair found
+  // Reject request if an unrecoverable dyndb error occurs
   try {
     const getTokenCommand = new GetCommand({
       TableName: DYNAMODB_TABLE_NAME,
