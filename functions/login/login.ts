@@ -1,7 +1,10 @@
 import { Context } from "@netlify/functions";
 import { randomBytes } from "crypto";
 import { throwOperationalError } from "../utils";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const DEPLOY_CONTEXT = Netlify.env.get("CONTEXT") || "";
@@ -44,8 +47,7 @@ export default async (req: Request, context: Context) => {
   const stateToken = randomBytes(8).toString("hex");
 
   // Store nonce/state token pair in dynamodb
-  // TODO: Reject request if it's an unrecoverable dyndb error
-  // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
+  // Reject request if it's an unrecoverable dyndb error
   try {
     const cmd = new PutCommand({
       TableName: DYNAMODB_TABLE_NAME,
@@ -56,11 +58,20 @@ export default async (req: Request, context: Context) => {
     });
     const response = await docClient.send(cmd);
   } catch (error) {
-    return throwOperationalError(
-      500,
-      "Exportify had an issue generating your login request to Spotify.",
-      `Could not store nonce/token pair in DynamoDB due to error: ${error}`
-    );
+    // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
+    if (error instanceof DynamoDBServiceException) {
+      return throwOperationalError(
+        500,
+        "Exportify had an issue generating your login request to Spotify.",
+        `Call to dyndb from /api/login could not store nonce/token pair: ${error.name} ${error.message} (I'd bet it's the bloody ${error.$fault}'s fault...)`
+      );
+    } else {
+      return throwOperationalError(
+        500,
+        "Exportify had an issue generating your login request to Spotify.",
+        `Call to dyndb from /api/login could not store nonce/token pair: ${error}`
+      );
+    }
   }
 
   // Define required user permissions needed for the Spotify access token

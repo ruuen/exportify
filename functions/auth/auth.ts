@@ -1,6 +1,9 @@
 import { Context } from "@netlify/functions";
 import { getAccessToken, encryptToken, throwOperationalError } from "../utils";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  DynamoDBServiceException,
+} from "@aws-sdk/client-dynamodb";
 import {
   DeleteCommand,
   DynamoDBDocumentClient,
@@ -74,8 +77,6 @@ export default async (req: Request, context: Context) => {
 
   // Select nonce/state pair from dynamodb based on request values
   // Reject auth if no matching pair found
-  // TODO: Reject request if it's an unrecoverable dyndb error
-  // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
   try {
     const getTokenCommand = new GetCommand({
       TableName: DYNAMODB_TABLE_NAME,
@@ -106,11 +107,20 @@ export default async (req: Request, context: Context) => {
     });
     const deleteTokenResponse = await docClient.send(deleteTokenCommand);
   } catch (error) {
-    return throwOperationalError(
-      500,
-      "Exportify had an issue during your login request to Spotify.",
-      `Error during authentication process: ${error}`
-    );
+    // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
+    if (error instanceof DynamoDBServiceException) {
+      return throwOperationalError(
+        500,
+        "Exportify had an issue during your login request to Spotify.",
+        `Error during call to dyndb from /api/auth. ${error.name}: ${error.message}`
+      );
+    } else {
+      return throwOperationalError(
+        500,
+        "Exportify had an issue during your login request to Spotify.",
+        `Error during call to dyndb from /api/auth: ${error}`
+      );
+    }
   }
 
   // Parse deploy url provided by function context param, reject if not provided/invalid
