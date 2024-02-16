@@ -19,6 +19,7 @@ const dbClient = new DynamoDBClient({
     accessKeyId: DYNAMODB_ACCESS_KEY_ID,
     secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
   },
+  maxAttempts: 5,
 });
 const docClient = DynamoDBDocumentClient.from(dbClient);
 
@@ -43,6 +44,8 @@ export default async (req: Request, context: Context) => {
   const stateToken = randomBytes(8).toString("hex");
 
   // Store nonce/state token pair in dynamodb
+  // TODO: Reject request if it's an unrecoverable dyndb error
+  // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
   try {
     const cmd = new PutCommand({
       TableName: DYNAMODB_TABLE_NAME,
@@ -52,11 +55,6 @@ export default async (req: Request, context: Context) => {
       },
     });
     const response = await docClient.send(cmd);
-
-    // If storage failed, return server error
-    if (response.$metadata.httpStatusCode !== 200) {
-      throw new Error(JSON.stringify(response.$metadata));
-    }
   } catch (error) {
     return throwOperationalError(
       500,

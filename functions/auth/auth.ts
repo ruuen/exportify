@@ -25,6 +25,7 @@ const dbClient = new DynamoDBClient({
     accessKeyId: DYNAMODB_ACCESS_KEY_ID,
     secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
   },
+  maxAttempts: 5,
 });
 const docClient = DynamoDBDocumentClient.from(dbClient);
 
@@ -73,6 +74,8 @@ export default async (req: Request, context: Context) => {
 
   // Select nonce/state pair from dynamodb based on request values
   // Reject auth if no matching pair found
+  // TODO: Reject request if it's an unrecoverable dyndb error
+  // AWS SDK exception doc: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
   try {
     const getTokenCommand = new GetCommand({
       TableName: DYNAMODB_TABLE_NAME,
@@ -82,17 +85,6 @@ export default async (req: Request, context: Context) => {
       },
     });
     const tokenResponse = await docClient.send(getTokenCommand);
-
-    // If query rejected due to an error, return server error
-    if (tokenResponse.$metadata.httpStatusCode !== 200) {
-      throw new Error(
-        `Could not get token from dynamodb: ${JSON.stringify(
-          tokenResponse.$metadata
-        )}`
-      );
-    }
-
-    // TODO: handle dyndb timeout if throttled
 
     // If no item returned from dynamodb, the nonce/token pair provided in request is wrong, return client error
     if (!tokenResponse.Item) {
@@ -113,13 +105,6 @@ export default async (req: Request, context: Context) => {
       },
     });
     const deleteTokenResponse = await docClient.send(deleteTokenCommand);
-    if (deleteTokenResponse.$metadata.httpStatusCode !== 200) {
-      throw new Error(
-        `Could not delete token from dynamodb: ${JSON.stringify(
-          deleteTokenResponse.$metadata
-        )}`
-      );
-    }
   } catch (error) {
     return throwOperationalError(
       500,
