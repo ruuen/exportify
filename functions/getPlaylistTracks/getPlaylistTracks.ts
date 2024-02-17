@@ -43,10 +43,8 @@ export default async (req: Request, context: Context) => {
     );
   }
 
-  const ROOT_ENDPOINT = "https://api.spotify.com/v1/playlists";
-  const requestParams = new URL(req.url).searchParams;
-
   // Reject request with client error if there was no playlistId param
+  const requestParams = new URL(req.url).searchParams;
   const playlistId = requestParams.get("playlistId");
   if (!playlistId) {
     return throwOperationalError(
@@ -72,6 +70,7 @@ export default async (req: Request, context: Context) => {
         SPOTIFY_CLIENT_SECRET
       );
       spotifyAccessToken.access_token = basicAccessToken.access_token;
+      spotifyAccessToken.token_type = basicAccessToken.token_type;
     } else {
       const decryptedUserToken = await decryptToken(
         userTokenCookie,
@@ -79,6 +78,7 @@ export default async (req: Request, context: Context) => {
         CIPHER_SALT
       );
       spotifyAccessToken.access_token = decryptedUserToken;
+      spotifyAccessToken.token_type = "user";
     }
   } catch (error) {
     return throwOperationalError(
@@ -88,6 +88,7 @@ export default async (req: Request, context: Context) => {
     );
   }
 
+  // Initial filters for the Spotify API request. Subsequent requests made by following the next param will provide their own query params
   const queryParams = new URLSearchParams([
     [
       "fields",
@@ -95,12 +96,14 @@ export default async (req: Request, context: Context) => {
     ],
     ["limit", "100"],
   ]);
+  const ROOT_ENDPOINT = "https://api.spotify.com/v1/playlists";
   const initialEndpoint = `${ROOT_ENDPOINT}/${playlistId}/tracks?${queryParams.toString()}`;
   const headers = new Headers({
     Authorization: `Bearer ${spotifyAccessToken.access_token}`,
     "Content-Type": "application/json",
   });
 
+  // States for request paging
   const fullTrackList: Array<Track> = [];
   let isQueryComplete: boolean = false;
   let next: string | null = null;
@@ -109,12 +112,14 @@ export default async (req: Request, context: Context) => {
     const response = await fetch(next || initialEndpoint, { headers: headers });
     const data: PaginatedResponse<Track> = await response.json();
 
+    // If Spotify API didn't return a next URL value, we have no more data to query and should return to the user.
     if (!data.next) {
       fullTrackList.push(...data.items);
       isQueryComplete = true;
       break;
     }
 
+    // Otherwise push the data we received in current query, and update next variable with next URL provided by Spotify API
     next = data.next;
     fullTrackList.push(...data.items);
   }
