@@ -1,6 +1,6 @@
 import { Context } from "@netlify/functions";
 import { getAccessToken, throwOperationalError, decryptToken } from "../utils";
-import { SpotifyAccessToken } from "../types";
+import { PaginatedResponse, SpotifyAccessToken } from "../types";
 
 interface Track {
   name: string;
@@ -12,14 +12,6 @@ interface Track {
       name: string;
     }
   ];
-}
-
-interface PlaylistData {
-  total: number;
-  limit: number;
-  offset: number;
-  next: string | null;
-  items: Array<Track>;
 }
 
 const CIPHER_KEY = Netlify.env.get("CIPHER_KEY");
@@ -115,7 +107,7 @@ export default async (req: Request, context: Context) => {
 
   while (!isQueryComplete) {
     const response = await fetch(next || initialEndpoint, { headers: headers });
-    const data: PlaylistData = await response.json();
+    const data: PaginatedResponse<Track> = await response.json();
 
     if (!data.next) {
       fullTrackList.push(...data.items);
