@@ -33,9 +33,10 @@ function PublicPlaylistView() {
       {playlist && (
         <PlaylistCard
           playlistId={playlist.id}
+          playlistUrl={playlist.external_urls.spotify}
           errorState={errorState}
           title={playlist.name}
-          author={playlist.owner.display_name}
+          author={playlist.owner}
           coverImages={playlist.images}
         />
       )}

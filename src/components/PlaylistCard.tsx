@@ -1,4 +1,9 @@
-import { FileFormat, PlaylistImage, ResponseError } from "../types";
+import {
+  FileFormat,
+  PlaylistImage,
+  PlaylistOwner,
+  ResponseError,
+} from "../types";
 import imgPlaceholderCover from "../assets/placeholder-cover.webp";
 import Button from "./Button";
 import useExporter from "../hooks/useExporter";
@@ -6,6 +11,7 @@ import useExporter from "../hooks/useExporter";
 interface PlaylistCardProps {
   /** Playlist ID passed as prop and used in API queries during export process when either button is clicked. */
   playlistId: string;
+  playlistUrl: string;
   /**
    * Images array returned for playlist from API will have varying items inside them.
    * (https://developer.spotify.com/documentation/web-api/concepts/playlists#using-playlist-images)
@@ -17,14 +23,15 @@ interface PlaylistCardProps {
    */
   coverImages: Array<PlaylistImage>;
   title: string;
-  author: string;
+  author: PlaylistOwner;
   errorState: ResponseError | null;
 }
 
 interface CardDisplayProps {
   coverImage: PlaylistImage;
   title: string;
-  author: string;
+  playlistUrl: string;
+  author: PlaylistOwner;
   handleClick: (fileFormat: FileFormat) => void;
   isLoading: boolean;
   btnError: ResponseError | null;
@@ -42,6 +49,7 @@ const placeholderCoverImage = {
 
 function PlaylistCard({
   playlistId,
+  playlistUrl,
   title,
   author,
   coverImages,
@@ -63,6 +71,7 @@ function PlaylistCard({
         <CardDisplay
           coverImage={activeCoverImage}
           title={title}
+          playlistUrl={playlistUrl}
           author={author}
           handleClick={(fileFormat: FileFormat) =>
             triggerExport(fileFormat, title)
@@ -78,6 +87,7 @@ function PlaylistCard({
 function CardDisplay({
   coverImage,
   title,
+  playlistUrl,
   author,
   handleClick,
   isLoading,
@@ -91,15 +101,21 @@ function CardDisplay({
         className="max-w-32  h-auto rounded-l-md object-cover"
         width={300}
         height={300}
+        loading="lazy"
       />
       <div className="flex flex-1 p-5 flex-col gap-3">
         <div>
-          <h4 className="font-medium text-slate-100">{title}</h4>
+          <h4 className="font-medium text-slate-100">
+            <a href={playlistUrl} target="_blank">
+              {title}
+            </a>
+          </h4>
           <a
             className="break-all hover:text-slate-100 transition-colors"
-            href="#"
+            href={author.external_urls.spotify}
+            target="_blank"
           >
-            @{author}
+            @{author.display_name}
           </a>
         </div>
 
