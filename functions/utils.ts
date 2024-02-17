@@ -113,7 +113,7 @@ async function decryptToken(
   sourceCipher: string,
   secretKey: string,
   salt: string
-) {
+): Promise<string> {
   return new Promise((resolve, reject) => {
     scrypt(secretKey, salt, 16, (err, key) => {
       if (err) reject(err);
