@@ -19,11 +19,9 @@ const DYNAMODB_ACCESS_KEY_ID = Netlify.env.get("DYNAMODB_ACCESS_KEY_ID") || "";
 const DYNAMODB_ACCESS_KEY_SECRET =
   Netlify.env.get("DYNAMODB_ACCESS_KEY_SECRET") || "";
 const DYNAMODB_TABLE_NAME =
-  DEPLOY_CONTEXT === "production"
-    ? "ExportifyStateToken"
-    : "ExportifyDevStateToken";
+  DEPLOY_CONTEXT === "dev" ? "ExportifyDevStateToken" : "ExportifyStateToken";
 const dbClient = new DynamoDBClient({
-  region: DEPLOY_CONTEXT === "production" ? "us-east-2" : "ap-southeast-2",
+  region: DEPLOY_CONTEXT === "dev" ? "ap-southeast-2" : "us-east-2",
   credentials: {
     accessKeyId: DYNAMODB_ACCESS_KEY_ID,
     secretAccessKey: DYNAMODB_ACCESS_KEY_SECRET,
