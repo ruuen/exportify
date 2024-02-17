@@ -166,7 +166,8 @@ export default async (req: Request, context: Context) => {
     return new Response(null, {
       status: 302,
       headers: new Headers([
-        ["Location", deployUrl.toString()],
+        // Using deployUrl.origin here ensures that Spotify API's query strings are dropped when redirecting client back from /api/auth to base / route.
+        ["Location", deployUrl.origin],
         [
           "Set-Cookie",
           `exportify-token=${spotifyAccessToken}; Domain=${deployUrl.hostname}; Path=/api; Max-Age=3600; SameSite=strict; HttpOnly;`,
