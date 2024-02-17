@@ -11,8 +11,11 @@ function extractIdFromPlaylistUrl(playlistUrl: URL): string {
   const playlistId = playlistUrl.pathname.split("/playlist/")[1];
   return playlistId;
 }
-
-/** Take a Spotify playlist URL from query param, return playlist details from Spotify API */
+/**
+ * Take a public Spotify playlist URL from query param, return playlist details from Spotify API.
+ *
+ * This endpoint does not support user-scope auth tokens, as playlist IDs for those are returned from Spotify API endpoint via /me/playlists and don't require this individual querying step.
+ */
 export default async (req: Request, context: Context) => {
   const SPOTIFY_CLIENT_ID = Netlify.env.get("SPOTIFY_CLIENT_ID");
   const SPOTIFY_CLIENT_SECRET = Netlify.env.get("SPOTIFY_CLIENT_SECRET");
