@@ -1,5 +1,6 @@
 import { Context } from "@netlify/functions";
-import { getBasicAccessToken, throwOperationalError } from "../utils";
+import { getAccessToken, throwOperationalError } from "../utils";
+import { SpotifyAccessToken } from "../types";
 /**
  * Spotify playlists are queried based on their playlist ID, which needs to be split from the playlist URL's path.
  *
@@ -59,7 +60,7 @@ export default async (req: Request, context: Context) => {
   // Reject request with server error if non-operational errors occur during Spotify API calls
   try {
     // TODO: Implement caching to reduce access tokens being generated
-    const accessToken = await getBasicAccessToken(
+    const basicAccessToken: SpotifyAccessToken = await getAccessToken(
       SPOTIFY_CLIENT_ID,
       SPOTIFY_CLIENT_SECRET
     );
@@ -68,7 +69,7 @@ export default async (req: Request, context: Context) => {
         "id,name,external_urls(spotify),owner(display_name,external_urls(spotify)),images(width,height,url),tracks(total)",
     });
     const headers = new Headers({
-      Authorization: `Bearer ${accessToken.access_token}`,
+      Authorization: `Bearer ${basicAccessToken.access_token}`,
       "Content-Type": "application/json",
     });
     const endpoint = `https://api.spotify.com/v1/playlists/${playlistId}?${fieldsToFetch.toString()}`;

@@ -1,9 +1,9 @@
-import { SearchMode, SpotifyUser } from "../types";
+import { SearchMode } from "../types";
 import clsx from "clsx";
 
 interface SearchModeSelectProps {
   searchMode: SearchMode;
-  isLoggedIn: SpotifyUser | null;
+  isLoggedIn: boolean;
   handleClick(e: React.MouseEvent<HTMLButtonElement>): void;
 }
 

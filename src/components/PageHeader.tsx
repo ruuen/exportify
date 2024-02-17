@@ -1,6 +1,12 @@
+import { initSpotifyLogin } from "../utils/auth";
+import Button from "./Button";
 import ButtonLink from "./ButtonLink";
 
-function PageHeader() {
+interface PageHeaderProps {
+  isLoggedIn: boolean;
+}
+
+function PageHeader({ isLoggedIn }: PageHeaderProps) {
   return (
     <header className="space-y-5 mx-auto lg:flex lg:space-y-0 lg:max-w-6xl">
       <div className="space-y-4">
@@ -31,11 +37,21 @@ function PageHeader() {
       </div>
 
       <nav className="flex flex-1 gap-3 flex-wrap lg:flex-col lg:items-end lg:justify-center">
-        <ButtonLink
-          href="#"
-          text="Log in with Spotify"
-          colourScheme="spotify"
-        />
+        {!isLoggedIn && (
+          <Button
+            text="Log in with Spotify"
+            colourScheme="spotify"
+            isLoading={false}
+            onClick={initSpotifyLogin}
+          />
+        )}
+        {isLoggedIn && (
+          <ButtonLink
+            href="/api/logout"
+            text="Log out"
+            colourScheme="warning"
+          />
+        )}
         <ButtonLink
           href="https://github.com/ruuen/exportify"
           text="Source Code"
