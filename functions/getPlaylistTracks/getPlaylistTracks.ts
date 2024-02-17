@@ -112,7 +112,7 @@ export default async (req: Request, context: Context) => {
     if (!data.next) {
       fullTrackList.push(...data.items);
       isQueryComplete = true;
-      continue;
+      break;
     }
 
     next = data.next;
