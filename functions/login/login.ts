@@ -52,6 +52,9 @@ export default async (req: Request, context: Context) => {
       Item: {
         user_nonce: nonce,
         state_token: stateToken,
+        // DynamoDB TTL takes unix epoch time in sec, not ms. Convert to seconds and set to expire 300 seconds (5 mins) from generation.
+        // If user bails after generating token but before validating it and finishing auth, this will clear out dyndb automatically.
+        deletion_at: Date.now() / 1000 + 300,
       },
     });
     const response = await docClient.send(cmd);
