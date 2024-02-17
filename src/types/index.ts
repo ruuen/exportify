@@ -23,12 +23,7 @@ export interface Playlist {
   external_urls: {
     spotify: string;
   };
-  owner: {
-    display_name: string;
-    external_urls: {
-      spotify: string;
-    };
-  };
+  owner: PlaylistOwner;
   images: Array<PlaylistImage>;
   tracks: {
     total: number;
@@ -39,6 +34,13 @@ export interface PlaylistImage {
   width?: number;
   height?: number;
   url: string;
+}
+
+export interface PlaylistOwner {
+  display_name: string;
+  external_urls: {
+    spotify: string;
+  };
 }
 
 export type PlaylistData = [{ track: PlaylistItem }];
