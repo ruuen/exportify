@@ -13,6 +13,11 @@ export interface AccessToken {
   expires_in: number;
 }
 
+export interface PagedApiResponse<T> {
+  next?: string | null;
+  items: T;
+}
+
 export interface ResponseError {
   message: string;
 }
@@ -43,7 +48,7 @@ export interface PlaylistOwner {
   };
 }
 
-export type PlaylistData = [{ track: PlaylistItem }];
+export type PlaylistData = Array<{ track: PlaylistItem }>;
 
 export interface PlaylistItem {
   name: string;

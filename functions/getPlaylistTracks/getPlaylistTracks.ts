@@ -1,6 +1,10 @@
 import { Context } from "@netlify/functions";
 import { getAccessToken, throwOperationalError, decryptToken } from "../utils";
-import { PaginatedResponse, SpotifyAccessToken } from "../types";
+import {
+  PagedApiResponse,
+  PagedSpotifyResponse,
+  SpotifyAccessToken,
+} from "../types";
 
 interface Track {
   name: string;
@@ -43,15 +47,28 @@ export default async (req: Request, context: Context) => {
     );
   }
 
-  // Reject request with client error if there was no playlistId param
+  // Get request params
   const requestParams = new URL(req.url).searchParams;
+  const offset = requestParams.get("offset");
+  // Reject request with client error if offset param value is provided but is not a positive int
+  if (offset && (isNaN(Number(offset)) || Number(offset) < 0)) {
+    return throwOperationalError(
+      400,
+      "Offset value provided was not a valid positive number"
+    );
+  }
   const playlistId = requestParams.get("playlistId");
+  // Reject request with client error if there was no playlistId param
   if (!playlistId) {
     return throwOperationalError(
       400,
       "No Spotify playlist id was provided as a query param"
     );
   }
+
+  // Generate timestamp of function run time limit (currently 8 minutes)
+  // If we haven't naturally completed the Spotify API loop by this time, we need to return a partial response
+  const functionExpiryTime = Date.now() + 8 * 1000;
 
   const spotifyAccessToken: SpotifyAccessToken = {
     access_token: "",
@@ -89,12 +106,14 @@ export default async (req: Request, context: Context) => {
   }
 
   // Initial filters for the Spotify API request. Subsequent requests made by following the next param will provide their own query params
+  // If an "offset" param was provided, this will be used in the first Spotify API request in loop.
   const queryParams = new URLSearchParams([
     [
       "fields",
       "total,limit,next,offset,items(track(name,artists(name),album.name))",
     ],
     ["limit", "100"],
+    ["offset", offset ? `${offset}` : "0"],
   ]);
   const ROOT_ENDPOINT = "https://api.spotify.com/v1/playlists";
   const initialEndpoint = `${ROOT_ENDPOINT}/${playlistId}/tracks?${queryParams.toString()}`;
@@ -104,27 +123,69 @@ export default async (req: Request, context: Context) => {
   });
 
   // States for request paging
-  const fullTrackList: Array<Track> = [];
+  const finalResponse: PagedApiResponse<Track> = {
+    items: [],
+  };
   let isQueryComplete: boolean = false;
-  let next: string | null = null;
+  let nextSpotifyPage: string | null = null;
 
   while (!isQueryComplete) {
-    const response = await fetch(next || initialEndpoint, { headers: headers });
-    const data: PaginatedResponse<Track> = await response.json();
+    // Return partial response if this loop iteration will occur past our function expiry timestamp
+    const willFunctionTimeout = Date.now() > functionExpiryTime;
+    if (willFunctionTimeout) {
+      // Parse deploy url provided by function context param, reject if not provided/invalid
+      let deployUrl: URL;
+      try {
+        if (!context.site.url)
+          throw new Error("Site url not provided in context");
+        deployUrl = new URL(context.site.url);
+      } catch (error) {
+        return throwOperationalError(
+          500,
+          "Exportify had a problem during the Spotify login process",
+          `Could not retrieve domain from site url in current request context: ${error}`
+        );
+      }
+
+      // calc offset value
+      // if our Spotify API loop started with a given offset value, add this to the count of processed items in our subsequent request
+      // otherwise we only need to return the count of items processed as this was an initial request
+      const nextOffset = offset
+        ? Number(offset) + finalResponse.items.length
+        : finalResponse.items.length;
+
+      // construct "next" url for client to follow
+      const nextPageParams = new URLSearchParams([
+        ["playlistId", playlistId],
+        ["offset", `${nextOffset}`],
+      ]);
+      const nextUrl = `getPlaylistTracks?${nextPageParams.toString()}`;
+
+      // return partial response with url to next page
+      finalResponse.next = nextUrl;
+      isQueryComplete = true;
+      break;
+    }
+
+    // Make Spotify API call
+    const response = await fetch(nextSpotifyPage || initialEndpoint, {
+      headers: headers,
+    });
+    const data: PagedSpotifyResponse<Track> = await response.json();
 
     // If Spotify API didn't return a next URL value, we have no more data to query and should return to the user.
     if (!data.next) {
-      fullTrackList.push(...data.items);
+      finalResponse.items.push(...data.items);
       isQueryComplete = true;
       break;
     }
 
     // Otherwise push the data we received in current query, and update next variable with next URL provided by Spotify API
-    next = data.next;
-    fullTrackList.push(...data.items);
+    nextSpotifyPage = data.next;
+    finalResponse.items.push(...data.items);
   }
 
-  return new Response(JSON.stringify(fullTrackList), {
+  return new Response(JSON.stringify(finalResponse), {
     status: 200,
     headers: new Headers({
       "Content-Type": "application/json",
