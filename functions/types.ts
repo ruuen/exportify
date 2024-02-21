@@ -4,10 +4,15 @@ export interface SpotifyAccessToken {
   expires_at?: number;
 }
 
-export interface PaginatedResponse<T> {
+export interface PagedSpotifyResponse<T> {
   total: number;
   limit: number;
   offset: number;
   next: string | null;
+  items: Array<T>;
+}
+
+export interface PagedApiResponse<T> {
+  next?: string | null;
   items: Array<T>;
 }
