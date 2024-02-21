@@ -61,11 +61,9 @@ export default async (req: Request, context: Context) => {
     );
   }
 
-  // Timestamp beginning of main function work
+  // Generate timestamp of function run time limit (currently 8 minutes)
   // If we haven't naturally completed the Spotify API loop by this time, we need to return a partial response
-  // TODO: Tune this timeout value; I think it could end up around 6ish seconds
-  // TODO: This is currently set to 1 second so I can trigger easily
-  const functionExpiryTime = Date.now() + 1 * 1000;
+  const functionExpiryTime = Date.now() + 8 * 1000;
 
   const spotifyAccessToken: SpotifyAccessToken = {
     access_token: "",
@@ -152,12 +150,11 @@ export default async (req: Request, context: Context) => {
         : finalResponse.items.length;
 
       // construct "next" url for client to follow
-      const offsetParam = new URLSearchParams({
-        offset: `${nextOffset}`,
-      });
-      const nextUrl = `${
-        deployUrl.origin
-      }/api/getPlaylistTracks?${offsetParam.toString()}`;
+      const nextPageParams = new URLSearchParams([
+        ["playlistId", playlistId],
+        ["offset", `${nextOffset}`],
+      ]);
+      const nextUrl = `getPlaylistTracks?${nextPageParams.toString()}`;
 
       // return partial response with url to next page
       finalResponse.next = nextUrl;
