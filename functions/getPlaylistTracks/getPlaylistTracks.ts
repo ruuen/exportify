@@ -49,9 +49,14 @@ export default async (req: Request, context: Context) => {
 
   // Get request params
   const requestParams = new URL(req.url).searchParams;
-  // TODO: validate that this is a valid number
-  // TODO: Reject request with client error if offset param value is not a positive int
   const offset = requestParams.get("offset");
+  // Reject request with client error if offset param value is provided but is not a positive int
+  if (offset && (isNaN(Number(offset)) || Number(offset) < 0)) {
+    return throwOperationalError(
+      400,
+      "Offset value provided was not a valid positive number"
+    );
+  }
   const playlistId = requestParams.get("playlistId");
   // Reject request with client error if there was no playlistId param
   if (!playlistId) {
