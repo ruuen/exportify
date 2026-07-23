@@ -83,7 +83,10 @@ export default async (req: Request, context: Context) => {
   try {
     // Deploy url provided by function context param
     if (!context.site.url) throw new Error("Site url not provided in context");
-    const deployUrl = new URL(context.site.url);
+    const deployUrl =
+      DEPLOY_CONTEXT === "dev"
+        ? new URL("http://127.0.0.1:8888")
+        : new URL(context.site.url);
 
     const responseParams = new URLSearchParams([
       ["response_type", "code"],
