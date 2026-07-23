@@ -62,7 +62,7 @@ function PlaylistCard({
   } = useExporter(playlistId);
 
   const activeCoverImage =
-    coverImages.length > 0 ? coverImages[0] : placeholderCoverImage;
+    coverImages?.length > 0 ? coverImages[0] : placeholderCoverImage;
 
   return (
     <article className="flex max-w-md h-full min-h-36 md:max-w-none mx-auto bg-slate-800 border border-slate-700 rounded-md shadow-lg">

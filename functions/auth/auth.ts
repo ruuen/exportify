@@ -126,7 +126,10 @@ export default async (req: Request, context: Context) => {
   let deployUrl: URL;
   try {
     if (!context.site.url) throw new Error("Site url not provided in context");
-    deployUrl = new URL(context.site.url);
+    deployUrl =
+      DEPLOY_CONTEXT === "dev"
+        ? new URL("http://127.0.0.1:8888")
+        : new URL(context.site.url);
   } catch (error) {
     return throwOperationalError(
       500,
